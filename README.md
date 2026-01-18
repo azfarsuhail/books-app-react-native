@@ -1,6 +1,6 @@
 # Shadiyana Book Explorer
 
-A React Native mobile application developed for the Senior Engineer technical assessment.
+A React Native mobile application developed.
 
 ## 🏗 Architecture Decisions
 
