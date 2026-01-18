@@ -1,33 +1,66 @@
-# Shadiyana Book Explorer
+# Book Explorer App 📚
 
-A React Native mobile application developed.
+A high-performance mobile application for exploring books, built with React Native and Expo. This project demonstrates modern mobile architecture, focusing on efficient data fetching, clean UI/UX, and robust state management.
 
-## 🏗 Architecture Decisions
+## 🚀 Key Features
 
-### 1. State Management: TanStack Query (React Query)
+* **Dynamic Search:** Real-time book search with debounced inputs to minimize API calls.
+* **Optimized UI/UX:** Smooth transitions, loading skeletons, and a clean, accessible interface.
+* **Offline First:** Caching strategies to ensure the app remains usable even with spotty network connections.
+* **Detail View:** Comprehensive book details including descriptions, authors, and cover art.
 
-I chose React Query over Redux or Context API because the app's primary state is **server state** (search results). React Query handles caching, deduping, and loading states out-of-the-box, which significantly reduces boilerplate code compared to a custom `useEffect` implementation.
+## 🛠 Tech Stack & Architecture
 
-### 2. Styling: NativeWind (Tailwind)
+* **Framework:** [Expo](https://expo.dev/) (Managed Workflow)
+* **UI Library:** React Native Paper / Custom Components
+* **State Management & Data Fetching:** **TanStack Query (React Query)**
+    * *Why?* We chose TanStack Query over Redux for this use case to handle server state efficiently. It provides out-of-the-box caching, background updates, and stale-data handling, significantly reducing boilerplate code for API interactions.
+* **Navigation:** React Navigation (Native Stack)
 
-Used for rapid UI iteration. It allows for consistent spacing and typography tokens (e.g., `p-4`, `text-xl`) without the overhead of maintaining a massive StyleSheet object.
+## 📦 Installation & Setup
 
-### 3. API & Data Handling
+1.  **Clone the repository:**
+    ```bash
+    git clone [https://github.com/your-username/book-explorer.git](https://github.com/your-username/book-explorer.git)
+    cd book-explorer
+    ```
 
-- **Debouncing:** Implemented a custom hook to debounce search inputs (500ms) to prevent hitting the Open Library API rate limits.
-- **Data Normalization:** The Open Library API returns raw data with inconsistent fields. I implemented an adapter pattern in `services/api.ts` to sanitize this data before it reaches the UI components.
-- **Mocking:** Since the generic Search API does not return "Star Ratings," I generated a deterministic mock rating based on the book hash for UI demonstration purposes (per the Figma design).
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
 
-## 🚀 Trade-offs & Future Improvements
+3.  **Start the development server:**
+    ```bash
+    npx expo start
+    ```
 
-Given the time constraints, I made a few pragmatic choices:
+## 📱 How to Build (APK)
 
-- **Testing:** Added unit tests for the critical Search flow. In a production environment, I would add E2E tests using Maestro or Detox.
-- **Error Boundaries:** Currently handling errors via simple UI feedback. A production app would require a global Error Boundary (e.g., Sentry) to catch crash loops.
-- **Types:** Some API responses are typed loosely (`any`). I would generate strict interfaces using something like Zod or quicktype.io for a real release.
+To generate a standalone Android APK for testing or distribution, follow these steps using EAS Build.
 
-## 🛠 Running the Project
+**Prerequisites:**
+* Ensure you have `eas-cli` installed: `npm install -g eas-cli`
+* Login to your Expo account: `eas login`
 
-1. `npm install`
-2. `npx expo start -c` (Clear cache recommended for NativeWind)
-3. `npm test` to run the Jest suite.
+**Build Command:**
+To build the APK (Android Package Kit):
+
+```bash
+eas build -p android --profile preview
+
+```
+
+*Note: The `--profile preview` flag is configured in `eas.json` to generate an installable APK file rather than an App Bundle (AAB) intended for the Play Store.*
+
+## 🧪 Running Tests
+
+To run the test suite:
+
+```bash
+npm test
+
+```
+
