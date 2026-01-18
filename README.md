@@ -1,15 +1,15 @@
-# Book Explorer App 📚
+# Book Explorer App 
 
 A high-performance mobile application for exploring books, built with React Native and Expo. This project demonstrates modern mobile architecture, focusing on efficient data fetching, clean UI/UX, and robust state management.
 
-## 🚀 Key Features
+##  Key Features
 
 * **Dynamic Search:** Real-time book search with debounced inputs to minimize API calls.
 * **Optimized UI/UX:** Smooth transitions, loading skeletons, and a clean, accessible interface.
 * **Offline First:** Caching strategies to ensure the app remains usable even with spotty network connections.
 * **Detail View:** Comprehensive book details including descriptions, authors, and cover art.
 
-## 🛠 Tech Stack & Architecture
+##  Tech Stack & Architecture
 
 * **Framework:** [Expo](https://expo.dev/) (Managed Workflow)
 * **UI Library:** React Native Paper / Custom Components
@@ -17,7 +17,7 @@ A high-performance mobile application for exploring books, built with React Nati
     * *Why?* We chose TanStack Query over Redux for this use case to handle server state efficiently. It provides out-of-the-box caching, background updates, and stale-data handling, significantly reducing boilerplate code for API interactions.
 * **Navigation:** React Navigation (Native Stack)
 
-## 📦 Installation & Setup
+##  Installation & Setup
 
 1.  **Clone the repository:**
     ```bash
@@ -37,7 +37,7 @@ A high-performance mobile application for exploring books, built with React Nati
     npx expo start
     ```
 
-## 📱 How to Build (APK)
+##  How to Build (APK)
 
 To generate a standalone Android APK for testing or distribution, follow these steps using EAS Build.
 
@@ -55,7 +55,7 @@ eas build -p android --profile preview
 
 *Note: The `--profile preview` flag is configured in `eas.json` to generate an installable APK file rather than an App Bundle (AAB) intended for the Play Store.*
 
-## 🧪 Running Tests
+##  Running Tests
 
 To run the test suite:
 
