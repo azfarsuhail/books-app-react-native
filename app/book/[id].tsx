@@ -1,45 +1,103 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  Image,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COVERS_URL } from '@/constants/config';
+// FIX: Import the new author function
+import { getBookDetails, getAuthorDetails } from '@/services/api'; 
+
+// PASTE YOUR BASE64 STRING HERE
+const base64Placeholder = ""; 
 
 export default function BookDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
 
-  // Fallback Logic: If params are missing, use the "Design Mock" text
-  const authorName = params.author || 'Unknown Author';
-  const bookTitle = params.title || 'Unknown Title';
-  const rating = params.rating || '4.5';
+  // 1. Setup State
+  const [rating, setRating] = useState(params.rating || '4.5');
+  const [reviewCount, setReviewCount] = useState(params.reviewCount || '100');
+  
+  // Description State
+  const [description, setDescription] = useState(
+    `This is where the detailed plot summary for "${params.title}" resides. Fetching latest data...`
+  );
+  
+  // Author Bio State (New)
+  const authorName = typeof params.author === 'string' ? params.author : 'Unknown Author';
+  const [aboutAuthorText, setAboutAuthorText] = useState(
+    `${authorName} is a celebrated writer. Fetching biography...`
+  );
 
-  // FIX: This ensures the text ALWAYS appears, even if API data is empty
-  const aboutAuthorText = `${authorName} is a celebrated writer, best known for their literary works. Before this publication, ${authorName} published several short stories in literary magazines.`;
+  const [isLoadingDetails, setIsLoadingDetails] = useState(true);
 
-  const overviewText = `This is where the detailed plot summary for "${bookTitle}" resides. Since the Open Library Search API provides limited details, we are using this placeholder text to demonstrate the layout structure required by the design specifications.`;
+  const bookTitle = typeof params.title === 'string' ? params.title : 'Unknown Title';
 
   const coverUrl = params.coverId
     ? `${COVERS_URL}/${params.coverId}-L.jpg`
     : 'https://blog.udemy.com/wp-content/uploads/2014/06/bigstock-Stack-of-colorful-real-books-o-19498535.jpg';
 
+  // 2. Fetch Real Data (Book + Author)
+  useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        // Run both API calls in parallel for speed
+        const [bookData, authorBio] = await Promise.all([
+          getBookDetails(bookTitle, authorName),
+          getAuthorDetails(authorName)
+        ]);
+        
+        // Update Book Details
+        if (bookData) {
+          if (bookData.rating) setRating(bookData.rating.toString());
+          if (bookData.count) setReviewCount(bookData.count.toString());
+          setDescription(bookData.description || "No detailed overview available.");
+        } else {
+          setDescription("No detailed overview available.");
+        }
+
+        // Update Author Bio
+        if (authorBio) {
+          setAboutAuthorText(authorBio);
+        } else {
+          setAboutAuthorText(`${authorName} is a writer known for this work. No detailed biography is currently available.`);
+        }
+
+      } catch (e) {
+        console.error("Failed to load details", e);
+        setDescription("Could not load book details.");
+      } finally {
+        setIsLoadingDetails(false);
+      }
+    };
+
+    fetchAllData();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={{ padding: 5 }}>
+        <TouchableOpacity 
+          onPress={() => router.back()} 
+          style={styles.iconButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+        >
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.dismissAll()}
-          style={{ padding: 5 }}
+          onPress={() => router.replace('/')} 
+          style={styles.iconButton}
+          hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
         >
           <Ionicons name="search" size={24} color="black" />
         </TouchableOpacity>
@@ -54,7 +112,9 @@ export default function BookDetailScreen() {
             <Image
               source={{ uri: coverUrl }}
               style={styles.coverImage}
-              resizeMode="cover"
+              contentFit="cover"
+              transition={500}
+              placeholder={{ uri: base64Placeholder }}
             />
           </View>
         </View>
@@ -64,32 +124,43 @@ export default function BookDetailScreen() {
           <Text style={styles.author}>{authorName}</Text>
           <Text style={styles.year}>Published in {params.year || 'N/A'}</Text>
 
+          {/* DYNAMIC RATING */}
           <View style={styles.ratingContainer}>
-            {[1, 2, 3, 4].map((star) => (
-              <Ionicons
-                key={star}
-                name="star"
-                size={18}
-                color="#FBBF24"
-                style={{ marginRight: 2 }}
-              />
-            ))}
-            <Ionicons name="star" size={18} color="#E5E7EB" />
+            <View style={{ flexDirection: 'row' }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Ionicons
+                  key={star}
+                  name={star <= Math.round(Number(rating)) ? "star" : "star-outline"}
+                  size={18}
+                  color="#FBBF24"
+                  style={{ marginRight: 2 }}
+                />
+              ))}
+            </View>
             <Text style={styles.ratingText}>
-              {rating} <Text style={styles.reviewCount}>({params.reviewCount} reviews)</Text>
+              {rating} <Text style={styles.reviewCount}>({reviewCount} reviews)</Text>
             </Text>
           </View>
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Overview</Text>
+          {isLoadingDetails ? (
+            <ActivityIndicator size="small" color="#34D399" style={{ alignSelf: 'flex-start', marginTop: 10 }} />
+          ) : (
+            <Text style={styles.sectionText}>{description}</Text>
+          )}
+        </View>
+        
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>About the author</Text>
-          <Text style={styles.sectionText}>{aboutAuthorText}</Text>
+          {isLoadingDetails ? (
+            <ActivityIndicator size="small" color="#34D399" style={{ alignSelf: 'flex-start', marginTop: 10 }} />
+          ) : (
+            <Text style={styles.sectionText}>{aboutAuthorText}</Text>
+          )}
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Overview</Text>
-          <Text style={styles.sectionText}>{overviewText}</Text>
-        </View>
       </ScrollView>
 
       <View style={styles.footer}>
@@ -114,10 +185,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 10,
+    zIndex: 100,      
+    elevation: 50,    
+    backgroundColor: '#fff', 
+  },
+  iconButton: {
+    padding: 8,
+    borderRadius: 20,
   },
   coverContainer: { alignItems: 'center', marginVertical: 20 },
   shadowWrapper: {
-    elevation: 10,
+    elevation: 10, 
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
@@ -140,7 +218,7 @@ const styles = StyleSheet.create({
   },
   author: { fontSize: 18, color: '#6B7280', marginBottom: 4 },
   year: { fontSize: 14, color: '#9CA3AF', marginBottom: 12 },
-  ratingContainer: { flexDirection: 'row', alignItems: 'center' },
+  ratingContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 5 },
   ratingText: { marginLeft: 8, fontWeight: 'bold', color: '#1F2937' },
   reviewCount: { fontWeight: 'normal', color: '#9CA3AF' },
   section: { paddingHorizontal: 24, marginBottom: 24 },
