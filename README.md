@@ -1,50 +1,33 @@
-# Welcome to your Expo app 👋
+# Shadiyana Book Explorer
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native mobile application developed for the Senior Engineer technical assessment.
 
-## Get started
+## 🏗 Architecture Decisions
 
-1. Install dependencies
+### 1. State Management: TanStack Query (React Query)
 
-   ```bash
-   npm install
-   ```
+I chose React Query over Redux or Context API because the app's primary state is **server state** (search results). React Query handles caching, deduping, and loading states out-of-the-box, which significantly reduces boilerplate code compared to a custom `useEffect` implementation.
 
-2. Start the app
+### 2. Styling: NativeWind (Tailwind)
 
-   ```bash
-   npx expo start
-   ```
+Used for rapid UI iteration. It allows for consistent spacing and typography tokens (e.g., `p-4`, `text-xl`) without the overhead of maintaining a massive StyleSheet object.
 
-In the output, you'll find options to open the app in a
+### 3. API & Data Handling
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- **Debouncing:** Implemented a custom hook to debounce search inputs (500ms) to prevent hitting the Open Library API rate limits.
+- **Data Normalization:** The Open Library API returns raw data with inconsistent fields. I implemented an adapter pattern in `services/api.ts` to sanitize this data before it reaches the UI components.
+- **Mocking:** Since the generic Search API does not return "Star Ratings," I generated a deterministic mock rating based on the book hash for UI demonstration purposes (per the Figma design).
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🚀 Trade-offs & Future Improvements
 
-## Get a fresh project
+Given the time constraints, I made a few pragmatic choices:
 
-When you're ready, run:
+- **Testing:** Added unit tests for the critical Search flow. In a production environment, I would add E2E tests using Maestro or Detox.
+- **Error Boundaries:** Currently handling errors via simple UI feedback. A production app would require a global Error Boundary (e.g., Sentry) to catch crash loops.
+- **Types:** Some API responses are typed loosely (`any`). I would generate strict interfaces using something like Zod or quicktype.io for a real release.
 
-```bash
-npm run reset-project
-```
+## 🛠 Running the Project
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+1. `npm install`
+2. `npx expo start -c` (Clear cache recommended for NativeWind)
+3. `npm test` to run the Jest suite.
